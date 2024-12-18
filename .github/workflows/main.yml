@@ -12,93 +12,93 @@ on:
       - backend-update
       - frontend-update
 
-  jobs:
-    deploy-backend:
-      if: github.event.action == 'backend-update' || github.event.name == 'workflow_dispatch' # 백엔드 업데이트 시 실행됨
-      runs-on: ubuntu-latest
+jobs:
+  deploy-backend:
+    if: github.event.action == 'backend-update' || github.event.name == 'workflow_dispatch' # 백엔드 업데이트 시 실행됨
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Checkout Central Repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout Central Repository
+        uses: actions/checkout@v4
 
-        - name: Set Backend Environment Variables # Set env for docker-compose
-          run: |
-            echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env
-            echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
-            echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
-            echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
-            echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
-            echo "JWT_ACCESS_EXPIRATION=${{ secrets.JWT_ACCESS_EXPIRATION }}" >> .env
-            echo "JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}" >> .env
-            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
-            echo "PROJECT_BACKEND=${{ secrets.PROJECT_BACKEND }}" >> .env
+      - name: Set Backend Environment Variables # Set env for docker-compose
+        run: |
+          echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env
+          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
+          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "JWT_ACCESS_EXPIRATION=${{ secrets.JWT_ACCESS_EXPIRATION }}" >> .env
+          echo "JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}" >> .env
+          echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
+          echo "PROJECT_BACKEND=${{ secrets.PROJECT_BACKEND }}" >> .env
 
-        - name: Docker Login # Docker Login
-          uses: docker/login-action@v2
-          with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Docker Login # Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-        - name: Initial Docker Compose Setup # 최초 실행 시 redis, mysql 실행
-          run: |
-            if [ ! "$(docker ps -q -f name=backend)" ]; then
-              echo "First-time Setup: Starting all services..."
-              docker-compose up -d mysql redis
-            fi
+      - name: Initial Docker Compose Setup # 최초 실행 시 redis, mysql 실행
+        run: |
+          if [ ! "$(docker ps -q -f name=backend)" ]; then
+            echo "First-time Setup: Starting all services..."
+            docker-compose up -d mysql redis
+          fi
 
-        - name: Pull Latest Backend Docker Image # Backend Docker image 최신화
-          run: |
-            echo "Pull Latest Backend Docker Image"
-            docker-compose pull backend
+      - name: Pull Latest Backend Docker Image # Backend Docker image 최신화
+        run: |
+          echo "Pull Latest Backend Docker Image"
+          docker-compose pull backend
 
-        - name: Copy application.yml.template to application.yml # Docker 환경변수로 설정 된 application.template.yml 파일로 application.yml 변경
-          run: |
-            cp application.yml.template application.yml
+      - name: Copy application.yml.template to application.yml # Docker 환경변수로 설정 된 application.template.yml 파일로 application.yml 변경
+        run: |
+          cp application.yml.template application.yml
 
-        - name: Restart Backend Service # Backend 컨테이너가 실행 중이라면 종료 후 다시 실행 아
-          run: |
-            if [ "$(docker ps -q -f name=backend)" ]; then
-              echo "Stopping Backend Container"
-              docker-compose stop backend
-            
-              echo "Remove Backend Container"
-              docker-compose rm -f backend
-            fi
+      - name: Restart Backend Service # Backend 컨테이너가 실행 중이라면 종료 후 다시 실행 아
+        run: |
+          if [ "$(docker ps -q -f name=backend)" ]; then
+            echo "Stopping Backend Container"
+            docker-compose stop backend
+          
+            echo "Remove Backend Container"
+            docker-compose rm -f backend
+          fi
 
-            echo "Restart Backend Service"
-            docker-compose up -d backend
+          echo "Restart Backend Service"
+          docker-compose up -d backend
 
-    deploy-frontend:
-      if: github.event.action == 'frontend-update' || github.event.name == 'workflow_dispatch' # 프론트엔드 업데이트 시 실행됨
-      runs-on: ubuntu-latest
+  deploy-frontend:
+    if: github.event.action == 'frontend-update' || github.event.name == 'workflow_dispatch' # 프론트엔드 업데이트 시 실행됨
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Checkout Central Repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout Central Repository
+        uses: actions/checkout@v4
 
-        - name: Set Frontend Environment Variables # Set env for docker-compose
-          run: |
-            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
-            echo "PROJECT_FRONTEND=${{ secrets.PROJECT_FRONTEND }}" >> .env
+      - name: Set Frontend Environment Variables # Set env for docker-compose
+        run: |
+          echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
+          echo "PROJECT_FRONTEND=${{ secrets.PROJECT_FRONTEND }}" >> .env
 
-        - name: Docker Login # Docker Login
-          uses: docker/login-action@v2
-          with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Docker Login # Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-        - name: Restart Frontend Service
-          run: |
-            if [ "$(docker ps -q -f name=frontend)" ]; then
-              echo "Stopping frontend Container"
-              docker-compose stop frontend
+      - name: Restart Frontend Service
+        run: |
+          if [ "$(docker ps -q -f name=frontend)" ]; then
+            echo "Stopping frontend Container"
+            docker-compose stop frontend
 
-              echo "Remove Frontend Container"
-              docker-compose rm -f frontend
-            fi
+            echo "Remove Frontend Container"
+            docker-compose rm -f frontend
+          fi
 
-            echo "Pull Latest Frontend Image"
-            docker-compose pull frontend
+          echo "Pull Latest Frontend Image"
+          docker-compose pull frontend
 
-            echo "Restart Frontend Service"
-            docker-compose up -d frontend
+          echo "Restart Frontend Service"
+          docker-compose up -d frontend
