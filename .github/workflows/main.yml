@@ -41,6 +41,7 @@ jobs:
 
       # docker-compose 캐시 설정
       - name: Cache Docker Compose
+        id: cache-docker-compose
         uses: actions/cache@v3
         with:
           path: /usr/local/bin/docker-compose
@@ -50,13 +51,10 @@ jobs:
 
       # docker-compose 설치
       - name: Install Docker Compose if not cached
+        if: steps.cache-docker-compose.outputs.cache-hit == 'false'
         run: |
-          if [! command -v docker-compose &> /dev/null]; then
-            echo "docker-compose not found, installing..."
-            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-          fi
-          docker-compose --version
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
 
       - name: Initial Docker Compose Setup # 최초 실행 시 redis, mysql 실행
         run: |
@@ -88,7 +86,7 @@ jobs:
           docker-compose up -d backend
 
   deploy-frontend:
-    if: github.event.name == 'workflow_dispatch' || github.event.action == 'frontend-update' # 프론트엔드 업데이트 시 실행됨
+    if: github.event_name == 'workflow_dispatch' || github.event.action == 'frontend-update' # 프론트엔드 업데이트 시 실행됨
     runs-on: ubuntu-latest
 
     steps:
@@ -108,6 +106,7 @@ jobs:
 
       # docker-compose 캐시 설정
       - name: Cache Docker Compose
+        id: cache-docker-compose
         uses: actions/cache@v3
         with:
           path: /usr/local/bin/docker-compose
@@ -117,13 +116,10 @@ jobs:
 
       # docker-compose 설치
       - name: Install Docker Compose if not cached
+        if: steps.cache-docker-compose.outputs.cache-hit == 'false'
         run: |
-          if [! command -v docker-compose &> /dev/null]; then
-            echo "docker-compose not found, installing..."
-            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-          fi
-          docker-compose --version
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
 
       - name: Restart Frontend Service
         run: |
