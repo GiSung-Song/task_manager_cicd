@@ -57,10 +57,6 @@ jobs:
           echo "Pull Latest Backend Docker Image"
           docker-compose pull backend
 
-      - name: Copy application.yml.template to application.yml # Docker 환경변수로 설정 된 application.template.yml 파일로 application.yml 변경
-        run: |
-          cp application.yml.template application.yml
-
       - name: Restart Backend Service # Backend 컨테이너가 실행 중이라면 종료 후 다시 실행 아
         run: |
           if [ "$(docker ps -q -f name=backend)" ]; then
