@@ -93,19 +93,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      # docker-compose 캐시 설정
-      - name: Cache Docker Compose
-        id: cache-docker-compose
-        uses: actions/cache@v3
-        with:
-          path: /usr/local/bin/docker-compose
-          key: ${{ runner.os }}-docker-compose-${{ hashFiles('**/docker-compose.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-docker-compose-
-
       # docker-compose 설치
-      - name: Install Docker Compose if not cached
-        if: steps.cache-docker-compose.outputs.cache-hit == 'false'
+      - name: Install Docker Compose
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
