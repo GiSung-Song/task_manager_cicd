@@ -27,6 +27,9 @@ on:
             echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
             echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
             echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+            echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+            echo "JWT_ACCESS_EXPIRATION=${{ secrets.JWT_ACCESS_EXPIRATION }}" >> .env
+            echo "JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}" >> .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             echo "PROJECT_BACKEND=${{ secrets.PROJECT_BACKEND }}" >> .env
 
@@ -36,14 +39,23 @@ on:
             username: ${{ secrets.DOCKERHUB_USERNAME }}
             password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-        - name: Initial Docker Compose Setup # 최초 실행 시 redis, mysql, backend 실행
+        - name: Initial Docker Compose Setup # 최초 실행 시 redis, mysql 실행
           run: |
             if [ ! "$(docker ps -q -f name=backend)" ]; then
               echo "First-time Setup: Starting all services..."
-              docker-compose up -d mysql redis backend
+              docker-compose up -d mysql redis
             fi
 
-        - name: Restart Backend Service
+        - name: Pull Latest Backend Docker Image # Backend Docker image 최신화
+          run: |
+            echo "Pull Latest Backend Docker Image"
+            docker-compose pull backend
+
+        - name: Copy application.yml.template to application.yml # Docker 환경변수로 설정 된 application.template.yml 파일로 application.yml 변경
+          run: |
+            cp application.yml.template application.yml
+
+        - name: Restart Backend Service # Backend 컨테이너가 실행 중이라면 종료 후 다시 실행 아
           run: |
             if [ "$(docker ps -q -f name=backend)" ]; then
               echo "Stopping Backend Container"
@@ -53,9 +65,6 @@ on:
               docker-compose rm -f backend
             fi
 
-            echo "Pull Latest Backend Image"
-            docker-compose pull backend
-            
             echo "Restart Backend Service"
             docker-compose up -d backend
 
