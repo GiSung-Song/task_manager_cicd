@@ -14,7 +14,7 @@ on:
 
 jobs:
   deploy-backend:
-    if: github.event.action == 'backend-update' || github.event.name == 'workflow_dispatch' # 백엔드 업데이트 시 실행됨
+    if: github.event.name == 'workflow_dispatch' || github.event.action == 'backend-update'  # 백엔드 업데이트 시 실행됨
     runs-on: ubuntu-latest
 
     steps:
@@ -88,7 +88,7 @@ jobs:
           docker-compose up -d backend
 
   deploy-frontend:
-    if: github.event.action == 'frontend-update' || github.event.name == 'workflow_dispatch' # 프론트엔드 업데이트 시 실행됨
+    if: github.event.name == 'workflow_dispatch' || github.event.action == 'frontend-update' # 프론트엔드 업데이트 시 실행됨
     runs-on: ubuntu-latest
 
     steps:
