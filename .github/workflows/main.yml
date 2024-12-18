@@ -1,0 +1,50 @@
+name: Centralized Backend & Frontend CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main # main branch에 변경사항이 생겼을 시 실행됨
+
+  workflow_dispatch: # 수동 실행 가능하게 함
+
+  repository_dispatch: # back / front repository 변경 시 트리거
+    types:
+      - backend-update
+      - frontend-update
+
+  jobs:
+    deploy-backend:
+      if: github.event.action == 'backend-update' || github.event.name == 'workflow_dispatch' # 백엔드 업데이트 시 실행됨
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout Central Repository
+          uses: actions/checkout@v4
+
+        - name: Set Backend Environment Variables # Set env for docker-compose
+          run: |
+            echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env
+            echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+            echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
+            echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
+            echo "PROJECT_BACKEND=${{ secrets.PROJECT_BACKEND }}" >> .env
+
+        - name: Docker Login # Docker Login
+          uses: docker/login-action@v2
+          with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+        - name: Initial Docker Compose Setup
+          run: |
+            if [ ! "$(docker ps -q -f name=backend)" ]; then
+              echo "First-time Setup: Starting all services..."
+              docker-compose up -d
+            fi
+
+        - name: Restart Backend Service
+          run: |
+            echo "Updating Backend Service"
+            docker-compose pull backend
+            docker-compose up -d backend
