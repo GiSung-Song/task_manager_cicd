@@ -8,10 +8,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: ${ MYSQL_PASSWORD } # 루트 비밀번호
-      MYSQL_USER: ${ MYSQL_USER }             # 사용자
-      MYSQL_PASSWORD: ${ MYSQL_PASSWORD }      # 사용자 비밀번호
-      MYSQL_DATABASE: ${ MYSQL_DATABASE }      # DB Name
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD} # 루트 비밀번호
+      MYSQL_USER: ${MYSQL_USER}             # 사용자
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}      # 사용자 비밀번호
+      MYSQL_DATABASE: ${MYSQL_DATABASE}      # DB Name
     volumes:
       - mysql-data:/var/lib/mysql
 
@@ -29,20 +29,20 @@ services:
     container_name: backend
     restart: always
     environment:
-      MYSQL_HOST: ${ MYSQL_HOST }
-      MYSQL_PORT: ${ MYSQL_PORT }
-      MYSQL_USER: ${ MYSQL_USER }
-      MYSQL_PASSWORD: ${ MYSQL_PASSWORD }
-      MYSQL_DATABASE: ${ MYSQL_DATABASE }
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
 
-      REDIS_HOST: ${ REDIS_HOST }
-      REDIS_PORT: ${ REDIS_PORT }
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
 
-      FRONTEND_ORIGIN: ${ FRONTEND_ORIGIN }
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
 
-      JWT_SECRET_KEY: ${ JWT_SECRET_KEY }
-      JWT_ACCESS_EXPIRATION: ${ JWT_ACCESS_EXPIRATION }
-      JWT_REFRESH_EXPIRATION: ${ JWT_REFRESH_EXPIRATION }
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
     ports:
       - "8080:8080"
 
